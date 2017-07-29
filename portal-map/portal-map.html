@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <title="Portal Map">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      html, body, #map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script defer>
+    fetch('portals.json')
+      .then((response) => response.json())
+      .then((portals) => {
+        let regions = _.groupBy(portals, 'region');
+        let regionStats = [];
+
+        for (let name in regions) {
+          let region = regions[name];
+
+          regionStats.push({
+            type: 'Feature',
+            geometry: region[0].location,
+            properties: {
+              name,
+              count: region.length
+            }
+          });
+        }
+
+        let geojson = {
+          type: 'FeatureCollection',
+          features: regionStats
+        };
+
+        let map = L.map('map', {
+          center: [0, 0],
+          zoom: 3
+        });
+
+        let basemap = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+          subdomains: 'abcd'
+        });
+
+        map.addLayer(basemap);
+
+        let pointToLayer = (point, latlng) => {
+          let properties = point.properties;
+
+          return L.marker(latlng, {
+            icon: L.icon({
+              iconUrl: `http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|70d2fc&chf=a,s,ee00FFFF`,
+              iconAnchor: [11, 34],
+            })
+          });
+        };
+
+        map.addLayer(L.geoJSON(geojson, { pointToLayer }));
+      });
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>
