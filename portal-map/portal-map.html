@@ -4,6 +4,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+    <script src="https://cdn.rawgit.com/saikocat/colorbrewer/ddf0629d/colorbrewer.js"></script>
+    <script src="https://cdn.rawgit.com/simogeo/geostats/8941b542/lib/geostats.min.js"></script>
 
     <style>
       body {
@@ -20,25 +22,49 @@
     fetch('portals.json')
       .then((response) => response.json())
       .then((portals) => {
-        let regions = _.groupBy(portals, 'region');
-        let regionStats = [];
+        let regions = _.chain(portals).filter('dataset_count').groupBy('region').value();
+        let features = [];
+        let counts = [];
+        let palette = ["#d7191c","#fdae61","#ffffbf","#abd9e9","#2c7bb6"];
 
         for (let name in regions) {
           let region = regions[name];
+          let datasetCount = 0;
 
-          regionStats.push({
+          for (let portal of region) {
+            if (portal.dataset_count) {
+              datasetCount += portal.dataset_count;
+            }
+          }
+
+          counts.push(datasetCount);
+
+          features.push({
             type: 'Feature',
             geometry: region[0].location,
             properties: {
               name,
-              count: region.length
+              datasetCount,
+              portalCount: region.length,
             }
+          });
+        }
+
+        let stats = new geostats(counts);
+        let breaks = stats.getClassQuantile(5);
+        let classes = [];
+
+        for (let i = 0, n = breaks.length - 1; i < n; i++) {
+          classes.push({
+            fill: palette[i],
+            lowerBound: breaks[i],
+            upperBound: breaks[i + 1]
           });
         }
 
         let geojson = {
           type: 'FeatureCollection',
-          features: regionStats
+          features: features
         };
 
         let map = L.map('map', {
@@ -55,16 +81,25 @@
 
         let pointToLayer = (point, latlng) => {
           let properties = point.properties;
+          let colorClass = _.find(classes, (colorClass) => {
+              return colorClass.lowerBound <= point.properties.datasetCount &&
+                     point.properties.datasetCount <= colorClass.upperBound;
+          });
+          let colorChar = colorClass.fill.substring(1);
 
           return L.marker(latlng, {
             icon: L.icon({
-              iconUrl: `http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|70d2fc&chf=a,s,ee00FFFF`,
+              iconUrl: `http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${colorChar}&chf=a,s,ee00FFFF`,
               iconAnchor: [11, 34],
             })
           });
         };
 
-        map.addLayer(L.geoJSON(geojson, { pointToLayer }));
+        let layer = L.geoJSON(geojson, { pointToLayer }).addTo(map);
+
+        map.fitBounds(layer.getBounds());
+
+        console.log('breaks', breaks);
       });
     </script>
   </head>
