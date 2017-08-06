@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <title="Portal Map">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      html, body, #map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script defer>
+    fetch('coverages.json')
+      .then((response) => response.json())
+      .then((coverages) => {
+        let map = L.map('map', {
+          center: [0, 0],
+          zoom: 3
+        });
+
+        let basemap = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+          subdomains: 'abcd'
+        });
+
+        map.addLayer(basemap);
+
+        let style = (feature) => {
+          return {
+            weight: 2,
+            opacity: 0.5,
+            color: '#fff',
+            fill: true,
+            fillColor: '#66c2ff'
+          }
+        };
+
+        let layer = L.geoJSON(coverages, { style }).addTo(map);
+
+        map.fitBounds(layer.getBounds());
+      });
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>

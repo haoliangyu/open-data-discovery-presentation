@@ -99,7 +99,9 @@
 
         map.fitBounds(layer.getBounds());
 
-        console.log('breaks', breaks);
+        console.log('max dataset count:', _.max(counts));
+        console.log('min dataset count:', _.min(counts));
+        console.log('breaks:', breaks);
       });
     </script>
   </head>
