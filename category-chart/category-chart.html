@@ -13,7 +13,16 @@
             let chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
             chart.draw(data, {
-              title: 'Dataset Count for Top 10 Categories'
+              title: 'Dataset Count for Top 10 Categories',
+              backgroundColor: 'transparent',
+              titleTextStyle: {
+                color: 'white'
+              },
+              legend: {
+                textStyle: {
+                  color: 'white'
+                }
+              }
             });
           }
         })
