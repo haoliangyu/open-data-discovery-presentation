@@ -5,23 +5,48 @@
       fetch('growth.json')
         .then((response) => response.json())
         .then((growth) => {
-          google.charts.load('current', {'packages':['line']});
+          google.charts.load('current', {'packages':['corechart']});
           google.charts.setOnLoadCallback(drawChart);
 
           function drawChart() {
             let data = google.visualization.arrayToDataTable(growth);
-            let chart = new google.charts.Line(document.getElementById('growthchart'));
+            let chart = new google.visualization.LineChart(document.getElementById('growthchart'));
 
-            chart.draw(data, google.charts.Line.convertOptions({
+            chart.draw(data, {
               title: 'Weekly dataset number growth',
               curveType: 'function',
               legend: {
                 position: 'bottom'
               },
-              theme: 'maximized',
-              curveType: 'function',
-              backgroundColor: 'transparent'
-            }));
+              backgroundColor: 'transparent',
+              lineWidth: 3,
+              hAxis: {
+                textStyle: {
+                  color: 'white'
+                }                
+              },
+              legend: {
+                textStyle: {
+                  color: 'white'
+                }
+              },
+              vAxis: {
+                baselineColor: '#ffffff',
+                gridlines: {
+                  color: '#ffffff'
+                },
+                minorGridlines: {
+                  color: '#ffffff'
+                },
+                textStyle: {
+                  color: 'white'
+                },
+                format: 'short'
+              },
+              titleTextStyle: {
+                color: 'white'
+              }
+            });
           }
         })
     </script>
