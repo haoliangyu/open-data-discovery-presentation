@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      fetch('growth.json')
+        .then((response) => response.json())
+        .then((growth) => {
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(drawChart);
+
+          function drawChart() {
+            let data = google.visualization.arrayToDataTable(growth);
+            let chart = new google.visualization.LineChart(document.getElementById('growthchart'));
+
+            chart.draw(data, {
+              title: 'Weekly dataset number growth',
+              curveType: 'function',
+              legend: {
+                position: 'bottom'
+              },
+              backgroundColor: 'transparent',
+              lineWidth: 3,
+              vAxis: {
+                format: 'decimal'
+              }
+            });
+          }
+        })
+    </script>
+  </head>
+  <body>
+    <div id="growthchart" style="width: 100%; height: 100%;"></div>
+  </body>
+</html>
